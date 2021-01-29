@@ -1,0 +1,35 @@
+<!-- toc.html -->
+<!-- ignore empty links with + -->
+{{ $headers := findRE "<h[1-4].*?>(.|\n])+?</h[1-4]>" .Content }}
+<!-- at least one header to link to -->
+{{ if ge (len $headers) 1 }}
+    {{ $h1_n := len (findRE "(.|\n])+?" .Content) }}
+    {{ $re := (cond (eq $h1_n 0) "<h[2-4]" "<h[1-4]") }}
+    {{ $renum := (cond (eq $h1_n 0) "[2-4]" "[1-4]") }}
+
+    <script src="{{ "js/hux-blog.js" | relURL }}"></script>
+
+    <div class="side-catalog">
+        <hr class="hidden-sm hidden-xs">
+        <h5>
+            <a class="catalog-toggle" href="#">CATALOG</a>
+        </h5>
+        <ul class="catalog-body">
+            {{ range $headers }}
+                {{ $header := . }} <!--{{ $header }} <h2 id="楔子">楔子</h2>-->
+                {{ range first 1 (findRE $re $header 1) }}
+                    {{ range findRE $renum . 1 }}
+                        {{ $next_heading := (cond (eq $h1_n 0) (sub (int .) 1 ) (int . ) ) }}
+                        {{ $anchorId := (replaceRE ".* id=\"(.*?)\".*" "$1" $header ) }}  <!-- 标题ID -->
+                            <li class="h{{ $next_heading }}_nav" >
+                                <a href="#{{ $anchorId }}" rel="nofollow">
+                                    {{ $header | plainify | htmlUnescape }}
+                                </a>
+                            </li>
+                    {{ end }}
+                {{ end }}
+            {{ end }}
+        </ul>
+    </div>
+{{ end }}
+               
